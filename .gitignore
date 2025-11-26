@@ -1,0 +1,84 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+*.log
+setup-logs/
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore transient lock info files created by terraform apply
+.terraform.tfstate.lock.info
+
+# Include override files you do wish to add to version control using negated pattern
+# !example_override.tf
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+# example: *tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore keys directory
+ssh_keys
+
+# Packer files
+manifest*.json
+packer.log
+build_ami_old.sh
+packer_cache/
+
+# Terraform lock file
+.terraform.lock.hcl
+
+plan.*
+
+
+/**/*.tfstate*
+/**/.terraform
+
+../modules/key/client_key
+../modules/key/client_key.pub
+# Local .terraform directories
+**/.terraform/*
+.terraform/*
+*lock.hcl
+*.lock*
+../.terraform/*
+# terraform.*
+# *.tfvars*
+
+# .tfstate files
+*.tfstate
+/**/*.tfstate*
+*.tfstate.*
+env.sh
+*.log*
+try.sh
+root
+
+commd*
+**log.sh
+**LOG_FILE
+**log.txt
+**.py
+**/.terragrunt-cache/*
+**tree.md
+terraform/main.tf
+terraform/graph/*
+terraform/graph/
+terraform/logs/
+*.dhcl
+terraform/**.tf

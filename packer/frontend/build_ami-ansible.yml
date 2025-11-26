@@ -1,0 +1,301 @@
+---
+- name: Build Frontend AMI using Packer and Terraform
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key"
+    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/modules/compute/asg/ami_ids"
+    key_file_path: "{{ playbook_dir | dirname | dirname }}/modules/nat_key/key/client_key"
+    packer_file: "frontend.pkr.hcl"
+
+    aws_region: "{{ lookup('env', 'aws_region') }}"
+    VPC_ID: "{{ lookup('env', 'VPC_ID') }}"
+    SUBNET_ID: "{{ lookup('env', 'SUBNET_ID') }}"
+    ssh_username: "{{ lookup('env', 'ssh_username') }}"
+    ssh_interface: "{{ lookup('env', 'ssh_interface') }}"
+    frontend_ami_type: "{{ lookup('env', 'frontend_ami_type') }}"
+    frontend_instance_type: "{{ lookup('env', 'frontend_instance_type') }}"
+    frontend_volume_type: "{{ lookup('env', 'frontend_volume_type') }}"
+    frontend_volume_size: "{{ lookup('env', 'frontend_volume_size') }}"
+    frontend_ami_name: "{{ lookup('env', 'frontend_ami_name') }}"
+    s3_ssm_cw_instance_profile_name: "{{ lookup('env', 's3_ssm_cw_instance_profile_name') }}"
+    bucket_name: "{{ lookup('env', 'bucket_name') }}"
+    internal_alb_dns_name: "{{ lookup('env', 'internal_alb_dns_name') }}"
+    environment: "{{ lookup('env', 'environment') }}"
+
+    # Cleanup tracking
+    build_failed: false
+    build_error_msg: ""
+    delete_done: false
+    log_file_modified: false
+
+  tasks:
+    - name: Main Build Block
+      block:
+        - name: Ensure AMI output directory exists
+          ansible.builtin.file:
+            path: "{{ ami_output_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Initialize Packer plugins
+          ansible.builtin.command: packer init .
+          args:
+            chdir: "{{ playbook_dir }}"
+
+        - name: Get client key name from Terraform output
+          ansible.builtin.shell: terragrunt --working-dir {{ terragrunt_key_dir }} output -raw client_key_name
+          register: client_key_name
+          changed_when: false
+
+        - name: Show client key name value
+          ansible.builtin.debug:
+            msg: "The client key name is {{ client_key_name.stdout }}"
+
+        # ---- AWS AMI Discovery ----
+        - name: Get latest Amazon Linux 2023 AMI ID
+          ansible.builtin.command: >
+            aws ec2 describe-images
+            --owners amazon
+            --filters "Name=name,Values={{ frontend_ami_type }}" "Name=state,Values=available"
+            --query "sort_by(Images, &CreationDate)[-1].ImageId"
+            --output text
+          register: SOURCE_AMI
+          changed_when: false
+
+        - name: Display selected source AMI
+          ansible.builtin.debug:
+            msg: "Using latest Amazon Linux 2023 AMI: {{ SOURCE_AMI.stdout }}"
+
+        - name: Create packer-log version
+          ansible.builtin.shell: |
+            LOG_DIR="packer-logs"
+            mkdir -p "$LOG_DIR"
+
+            # Find the highest existing number
+            last_log=$(ls "$LOG_DIR"/*.log 2>/dev/null | sort -V | tail -n 1 || true)
+
+            if [ -z "$last_log" ]; then
+              next_num=0
+            else
+              # Extract the number from the filename
+              last_num=$(basename "$last_log" .log | grep -oE '[0-9]+$' || echo 0)
+              next_num=$((last_num + 1))
+            fi
+
+            LOG_FILE="$LOG_DIR/packerlog${next_num}.log"
+            echo "$LOG_FILE"
+          register: log_file_name
+          changed_when: false
+
+        - name: Set cleaned packer log path
+          ansible.builtin.set_fact:
+            clean_packer_log_path: "{{ log_file_name.stdout | trim }}"
+
+        - name: Debug log path
+          ansible.builtin.debug:
+            msg: "Next Packer log file will be {{ clean_packer_log_path }}"
+
+        # ---- Packer Build ----
+        - name: Build Frontend AMI with Packer
+          ansible.builtin.shell: |
+            set -euo pipefail
+            echo "Starting Packer build for Frontend AMI..."
+            PACKER_LOG=1 PACKER_LOG_PATH={{ clean_packer_log_path }} packer build \
+              -var "aws_region={{ aws_region }}" \
+              -var "source_ami={{ SOURCE_AMI.stdout }}" \
+              -var "vpc_id={{ VPC_ID }}" \
+              -var "ssh_username={{ ssh_username }}" \
+              -var "ssh_interface={{ ssh_interface }}" \
+              -var "frontend_instance_type={{ frontend_instance_type }}" \
+              -var "volume_type={{ frontend_volume_type }}" \
+              -var "volume_size={{ frontend_volume_size }}" \
+              -var "frontend_ami_name={{ frontend_ami_name }}" \
+              -var "subnet_id={{ SUBNET_ID }}" \
+              -var "s3_ssm_cw_instance_profile_name={{ s3_ssm_cw_instance_profile_name }}" \
+              -var "bucket_name={{ bucket_name }}" \
+              -var "internal_alb_dns_name={{ internal_alb_dns_name }}" \
+              -var "environment={{ environment }}" \
+              -var "client_key_name={{ client_key_name.stdout }}" \
+              -var "key_file_path={{ key_file_path }}" \
+              {{ packer_file }} | tee >(grep -Eo 'ami-[a-z0-9]{17}' | tail -n1 > {{ ami_output_dir }}/frontend_ami.txt)
+
+          args:
+            executable: /bin/bash
+            chdir: "{{ playbook_dir }}"
+          register: build_result
+          # failed_when: false # Don't fail immediately, handle in rescue
+
+        - name: Check if Packer build succeeded
+          ansible.builtin.fail:
+            msg: "Packer build failed with exit code {{ build_result.rc }}"
+          when: build_result.rc != 0
+
+        - name: Display saved AMI ID
+          ansible.builtin.shell: cat {{ ami_output_dir }}/frontend_ami.txt
+          register: ami_id
+          changed_when: false
+
+        - name: Show final AMI ID
+          ansible.builtin.debug:
+            msg: "✅ Frontend AMI successfully built and saved: {{ ami_id.stdout }}"
+
+      rescue:
+        - name: Capture build error details
+          ansible.builtin.set_fact:
+            build_failed: true
+            build_error_msg: "{{ ansible_failed_result.msg | default('Unknown error') }}"
+
+        - name: Display error message
+          ansible.builtin.debug:
+            msg: |
+              ❌ Build failed with error:
+              {{ build_error_msg }}
+
+        - name: make packer log human readable by remove ANSI escape sequences in rescue via handler
+          ansible.builtin.debug:
+            msg: "Making Packer log human readable by removing ANSI escape sequences..."
+          changed_when: true
+          notify: modify_packer_log_file # ← This notifies the handler
+          when: not log_file_modified | bool
+
+        - name: Ensure packer log modificatio runs immediately to display last 50 lines
+          ansible.builtin.meta: flush_handlers
+
+        - name: set log file modified fact in rescue
+          ansible.builtin.set_fact:
+            log_file_modified: true
+          when: not log_file_modified | bool
+
+        - name: Display Packer log for debugging
+          ansible.builtin.shell: |
+            if [ -f "{{ clean_packer_log_path }}" ]; then
+              echo "📋 Last 50 lines of Packer log:"
+              tail -n 50 "{{ clean_packer_log_path }}"
+            fi
+          register: packer_log_output # Capture stdout/stderr here
+          changed_when: false
+          ignore_errors: yes
+
+        - name: Pretty print Packer log output
+          ansible.builtin.debug:
+            # msg: "{{ packer_log_output.stdout | to_nice_yaml }}"
+            msg: "{{ packer_log_output.stdout_lines }}" # Prints as indented list
+          when: packer_log_output is succeeded or packer_log_output is failed # Always show, even on error
+
+        - name: check and delete partially created ami and snapshots
+          ansible.builtin.debug:
+            msg: "checking for partial AMI to delete..."
+          changed_when: true
+          notify: delete_ami # ← This notifies the handler
+
+      always:
+        - name: Verify log file was created
+          ansible.builtin.stat:
+            path: "{{ clean_packer_log_path }}"
+          register: log_stat
+          changed_when: false
+
+        # run this only if not already done in rescue
+        - name: make packer log human readable by remove ANSI escape sequences in always via handler
+          ansible.builtin.debug:
+            msg: "Making Packer log human readable by removing ANSI escape sequences..."
+          changed_when: true
+          notify: modify_packer_log_file # ← This notifies the handler
+          when: not log_file_modified | bool
+
+        # - name: set log file modified fact in always block
+        #   ansible.builtin.set_fact:
+        #     log_file_modified: true
+        #   when: not log_file_modified | bool
+
+        - name: Display log file location
+          ansible.builtin.debug:
+            msg: |
+              📁 Packer log saved at:
+              {{ clean_packer_log_path }}
+              (Size: {{ log_stat.stat.size | default('unknown') }} bytes)
+
+  handlers:
+    - name: delete_ami
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/ansible_tasks/delete_ami.yml"
+      # ansible.builtin.include_tasks: delete_ami.yml
+      # when: not delete_done | bool
+      listen:
+        delete_ami
+
+        # run this only if not already done in rescue
+    - name: Make Packer log human readable by remove ANSI escape sequences
+      ansible.builtin.shell: |
+        # After packer finishes, clean up the log
+        cp "{{ clean_packer_log_path }}" "{{ clean_packer_log_path }}.bak"   # Backup raw log
+
+        # Strip ANSI escape sequences
+        sed -E 's/\x1b\[[0-9;]*m//g' "{{ clean_packer_log_path }}.bak" > "{{ clean_packer_log_path }}"
+
+        # remove the backup raw file
+        rm -f "{{ clean_packer_log_path }}.bak"
+      args:
+        executable: /bin/bash
+        chdir: "{{ playbook_dir }}"
+      changed_when: false
+      listen: modify_packer_log_file
+      # when: not log_file_modified | bool
+
+      # vars:
+      #   aws_region: "{{ aws_region }}"
+      #   ami_output_dir: "{{ ami_output_dir }}"
+
+      # - name: Display cleanup message
+      #   debug:
+      #     msg: "🧹 Performing cleanup operations..."
+
+      # - name: Check if partial AMI was created
+      #   shell: |
+      #     # List any partial or failed AMI builds
+      #     aws ec2 describe-images \
+      #       --owners self \
+      #       --filters "Name=name,Values={{ frontend_ami_name }}*" \
+      #       --query "Images[*].{ID:ImageId,Name:Name,State:State}" \
+      #       --output table
+      #   register: ami_check
+      #   changed_when: false
+      #   ignore_errors: yes
+      # - name: Display AMI check results
+      #   debug:
+      #     msg: |
+      #       Current AMIs matching pattern:
+      #       {{ ami_check.stdout }}
+      #   when: ami_check.stdout | trim != "None"
+      #   ignore_errors: yes
+
+      # - name: Clean up Packer build artifacts (optional)
+      #   shell: |
+      #     # Optional: Remove crash.log if Packer crashed
+      #     if [ -f "crash.log" ]; then
+      #       echo "Removing crash.log..."
+      #       rm -f crash.log
+      #     fi
+      #   args:
+      #     chdir: "{{ playbook_dir }}"
+      #   changed_when: false
+      #   ignore_errors: yes
+
+  post_tasks:
+    - name: Summary report
+      ansible.builtin.debug:
+        msg: |
+          📊 Build Summary:
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━
+          Build Status: {% if build_failed %}❌ FAILED{% else %}✅ SUCCESS{% endif %}
+          {% if build_failed %}Error: {{ build_error_msg }}{% endif %}
+          {% if not build_failed and ami_id is defined %}AMI ID: {{ ami_id.stdout }}{% endif %}
+          Packer Log: {{ clean_packer_log_path }}
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Final validation
+      ansible.builtin.fail:
+        msg: "Build failed. Check logs above for details."
+      when: build_failed | bool

@@ -1,0 +1,11 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "aws_eip.eip-nat-a" [label="aws_eip.eip-nat-a"];
+  "aws_nat_gateway.nat-a" [label="aws_nat_gateway.nat-a"];
+  "aws_route.nat_gateway_route_a" [label="aws_route.nat_gateway_route_a"];
+  "aws_route.nat_gateway_route_b" [label="aws_route.nat_gateway_route_b"];
+  "aws_nat_gateway.nat-a" -> "aws_eip.eip-nat-a";
+  "aws_route.nat_gateway_route_a" -> "aws_nat_gateway.nat-a";
+  "aws_route.nat_gateway_route_b" -> "aws_nat_gateway.nat-a";
+}

@@ -1,0 +1,97 @@
+---
+# cleanup_tasks.yml
+# This file contains cleanup tasks for the Packer build process
+
+- name: Check if cleanup already done
+  ansible.builtin.set_fact:
+    skip_cleanup: true
+  when: cleanup_done | bool
+
+- name: Display cleanup skip message
+  ansible.builtin.debug:
+    msg: "⚠️ Cleanup already executed, skipping..."
+  when: skip_cleanup | default(false)
+
+- name: Mark cleanup as in-progress
+  ansible.builtin.set_fact:
+    cleanup_done: true
+  when: not cleanup_done | bool
+
+- name: Display cleanup message
+  ansible.builtin.debug:
+    msg: "🧹 Cleaning up temporary resources..."
+  when: not skip_cleanup | default(false)
+
+- name: Revoke port 3306  access from RDS
+  ansible.builtin.shell: |
+    set -e
+    echo "Removing RDS ingress rule..."
+    aws ec2 revoke-security-group-ingress \
+      --group-id "{{ RDS_SG_ID }}" \
+      --protocol tcp \
+      --port 3306 \
+      --source-group "{{ PACKER_SG_ID }}" \
+      --region "{{ aws_region }}"
+  register: revoke_port_3306
+  failed_when: false
+  ignore_errors: true
+  when:
+    - not skip_cleanup | default(false)
+    - PACKER_SG_ID is defined
+    - PACKER_SG_ID | length > 0
+    - RDS_SG_ID | length > 0
+
+- name: Log port 3306 revoke result
+  ansible.builtin.debug:
+    msg: "{% if revoke_port_3306.rc == 0 %}✓ Revoked port 3306 access{% else %}⚠️ Failed to revoke port 3306 (may already be removed){% endif %}"
+  when:
+    - not skip_cleanup | default(false)
+    - revoke_port_3306 is defined
+
+- name: Wait before deleting SG (allow time for ENI detachment)
+  ansible.builtin.pause:
+    seconds: 5
+  when:
+    - not skip_cleanup | default(false)
+    - PACKER_SG_ID is defined
+    - PACKER_SG_ID | length > 0
+
+- name: Delete security group
+  ansible.builtin.command: >
+    aws ec2 delete-security-group
+    --group-id "{{ PACKER_SG_ID }}"
+    --region "{{ aws_region }}"
+  register: delete_sg
+  failed_when: false
+  ignore_errors: true
+  retries: 3
+  delay: 5
+  until: delete_sg is succeeded
+  when:
+    - not skip_cleanup | default(false)
+    - PACKER_SG_ID is defined
+    - PACKER_SG_ID | length > 0
+
+- name: Check if partial AMI was created
+  ansible.builtin.shell: |
+    # List any partial or failed AMI builds
+    aws ec2 describe-images \
+      --owners self \
+      --filters "Name=name,Values={{ backend_ami_name }}*" \
+      --query "Images[*].{ID:ImageId,Name:Name,State:State}" \
+      --output table
+  register: ami_check
+  changed_when: false
+  ignore_errors: yes
+
+- name: Log deletion result
+  ansible.builtin.debug:
+    msg: "{% if delete_sg.rc == 0 %}✓ Deleted security group {{ PACKER_SG_ID }}{% else %}⚠️ Failed to delete security group {{ PACKER_SG_ID }} (may still be in use){% endif %}"
+  when:
+    - not skip_cleanup | default(false)
+    - delete_sg is defined
+
+- name: Confirm cleanup completion
+  ansible.builtin.debug:
+    msg: "✅ Cleanup process completed"
+  when: not skip_cleanup | default(false)

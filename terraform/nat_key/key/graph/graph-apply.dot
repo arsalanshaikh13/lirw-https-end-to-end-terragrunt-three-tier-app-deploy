@@ -1,0 +1,7 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "aws_key_pair.client_key" [label="aws_key_pair.client_key"];
+  "aws_key_pair.nat-bastion" [label="aws_key_pair.nat-bastion"];
+  "aws_key_pair.server_key" [label="aws_key_pair.server_key"];
+}
