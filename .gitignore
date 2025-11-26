@@ -82,3 +82,4 @@ terraform/graph/
 terraform/logs/
 *.dhcl
 terraform/**.tf
+notes.txt
