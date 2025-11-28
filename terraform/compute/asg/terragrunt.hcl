@@ -10,6 +10,9 @@ include "global_mocks" {
 }
 locals {
   region = include.root.locals.region
+  # aws_provider_version = include.root.locals.aws_provider_version
+  # local_provider_version = include.root.locals.local_provider_version
+  provider_version = include.root.locals.provider_version
 }
 
 terraform {
@@ -87,15 +90,15 @@ generate "provider_compute" {
   if_exists = "overwrite"
   contents  = <<EOF
 terraform {
-  required_version = "~> 1.13.3"
+  required_version = "${local.provider_version["terraform"]}"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "4.67.0"
+      version = "${local.provider_version["aws"]}"
     }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.4"
+      version = "${local.provider_version["local"]}"
     }
   }
 }

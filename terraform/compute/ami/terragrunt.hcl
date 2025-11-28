@@ -11,6 +11,10 @@ include "global_mocks" {
 
 locals {
   region = include.root.locals.region
+    # aws_provider_version = include.root.locals.aws_provider_version
+  # local_provider_version = include.root.locals.local_provider_version
+  provider_version = include.root.locals.provider_version
+  
   # original_dir = "${get_original_terragrunt_dir()}"
   # frontend_ami_file = "${local.original_dir}/modules/asg/ami_ids/frontend_ami.txt"
   ami_folder        = "${get_parent_terragrunt_dir("root")}/modules/compute/asg/ami_ids"
@@ -20,6 +24,7 @@ locals {
   frontend_manifest = "${local.packer_folder}/frontend/manifest.json"
   backend_manifest  = "${local.packer_folder}/backend/manifest.json"
 }
+
 terraform {
   # source = "../../../../modules/app"
   source = "${path_relative_from_include("root")}/modules/compute/ami"
@@ -135,24 +140,24 @@ terraform {
 }
 
 # Generate extended provider block (adds local & null)
-generate "provider_null_resource" {
+generate "provider_compute" {
   path      = "provider.tf"
   if_exists = "overwrite"
   contents  = <<EOF
 terraform {
-  required_version = "~> 1.13.3"
+  required_version = "${local.provider_version["terraform"]}"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "4.67.0"
+      version = "${local.provider_version["aws"]}"
     }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.4"
+      version = "${local.provider_version["local"]}"
     }
     null = {
       source  = "hashicorp/null"
-      version = "~> 3.2"
+      version = "${local.provider_version["null_provider"]}"
     }
   }
 }
@@ -162,6 +167,7 @@ provider "aws" {
 
 EOF
 }
+
 
 dependency "vpc" {
   # config_path                             = "../../network/vpc"

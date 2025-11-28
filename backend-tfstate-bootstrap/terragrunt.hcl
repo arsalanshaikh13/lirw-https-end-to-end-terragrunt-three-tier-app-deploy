@@ -1,19 +1,9 @@
+
+
 # backend-tfstate-bootstrap/terragrunt.hcl
 terraform {
-  source = "./"
+  source = "${get_repo_root()}/modules/backend-tfstate-bootstrap"
 
-  extra_arguments "custom_vars" {
-    commands = [
-      "apply",
-      "plan",
-      "destroy"
-    ]
-
-    # required_var_files = ["terraform.tfvars"]
-    # required_var_files = ["${get_parent_terragrunt_dir()}/configuration/dev/us-east-1/app/app.tfvars"]
-    # required_var_files = ["${get_parent_terragrunt_dir()}/configuration/${basename(dirname(dirname(get_terragrunt_dir())))}/${basename(dirname(get_terragrunt_dir()))}/${basename(get_terragrunt_dir())}/app.tfvars"]
-    required_var_files = ["${get_repo_root()}/configuration/terraform.tfvars"]
-  }
   # Run automatically before any other folder
   before_hook "pre_plan" {
     commands = ["plan"]
@@ -34,3 +24,41 @@ terraform {
 
 }
 
+locals {
+
+  config_hcl         = read_terragrunt_config("${get_repo_root()}/configuration/config.hcl")
+  region              = local.config_hcl.locals.region
+  backend_bucket_name = local.config_hcl.locals.backend_bucket_name
+  dynamodb_table      = local.config_hcl.locals.dynamodb_table
+  # terraform_required_version    = local.config_hcl.locals.terraform_required_version
+  # aws_provider_version      = local.config_hcl.locals.aws_provider_version
+  provider_version      = local.config_hcl.locals.provider_version
+}
+
+# Automatically generate provider.tf for all subfolders
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite"
+  contents  = <<EOF
+terraform {
+  required_version = "${local.provider_version["terraform_required"]}"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "${local.provider_version["aws"]}"
+    }
+  }
+}
+
+provider "aws" {
+  region = "${local.region}"
+}
+EOF
+}
+
+
+inputs = {
+  backend_bucket_name = local.backend_bucket_name
+  dynamodb_table      = local.dynamodb_table
+  region              = local.region
+}

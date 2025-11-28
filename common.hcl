@@ -3,10 +3,14 @@
 
 locals {
 
-  backend_hcl         = read_terragrunt_config("${get_repo_root()}/configuration/backend.hcl")
-  region              = local.backend_hcl.locals.region
-  backend_bucket_name = local.backend_hcl.locals.backend_bucket_name
-  dynamodb_table      = local.backend_hcl.locals.dynamodb_table
+  config_hcl         = read_terragrunt_config("${get_repo_root()}/configuration/config.hcl")
+  region              = local.config_hcl.locals.region
+  backend_bucket_name = local.config_hcl.locals.backend_bucket_name
+  dynamodb_table      = local.config_hcl.locals.dynamodb_table
+  # aws_provider_version      = local.config_hcl.locals.aws_provider_version
+  # local_provider_version      = local.config_hcl.locals.local_provider_version
+  # null_provider_version      = local.config_hcl.locals null_provider_version
+  provider_version      = local.config_hcl.locals.provider_version
 }
 
 #  Automatically generate provider.tf for all subfolders
@@ -18,7 +22,7 @@ terraform {
     backend  "s3"{
     bucket         = "${local.backend_bucket_name}"
     key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = "us-east-1"
+    region         = "${local.region}"
     dynamodb_table = "${local.dynamodb_table}"
     encrypt        = true
     use_lockfile   = true
@@ -32,11 +36,11 @@ generate "provider" {
   if_exists = "overwrite"
   contents  = <<EOF
 terraform {
-  required_version = "~> 1.13.3"
+  required_version = "${local.provider_version["terraform"]}"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "4.67.0"
+      version = "${local.provider_version["aws"]}"
     }
   }
 }
