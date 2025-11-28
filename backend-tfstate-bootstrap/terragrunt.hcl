@@ -41,7 +41,7 @@ generate "provider" {
   if_exists = "overwrite"
   contents  = <<EOF
 terraform {
-  required_version = "${local.provider_version["terraform_required"]}"
+  required_version = "${local.provider_version["terraform"]}"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
