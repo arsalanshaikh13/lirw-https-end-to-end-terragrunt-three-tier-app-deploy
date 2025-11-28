@@ -1,4 +1,4 @@
-resource "aws_s3_bucket" "lirw-bucket" {
+resource "aws_s3_bucket" "bucket" {
   bucket        = var.bucket_name
   force_destroy = true # optional, deletes objects when destroying
 

@@ -217,7 +217,7 @@ inputs = {
   db_sg_id                        = dependency.sg.outputs.db_sg_id
   s3_ssm_cw_instance_profile_name = dependency.iam_role.outputs.s3_ssm_cw_instance_profile_name
   internal_alb_dns_name           = dependency.alb.outputs.internal_alb_dns_name
-  lirw_bucket_name               = dependency.s3.outputs.lirw_bucket_name
+  bucket_name               = dependency.s3.outputs.bucket_name
   # server_key_name = dependency.key.outputs.server_key_name
   # client_key_name = dependency.key.outputs.client_key_name
 

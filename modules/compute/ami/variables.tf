@@ -33,9 +33,9 @@ variable "internal_alb_dns_name" {
   description = "internal_alb_dns_name variable"
 }
 
-variable "lirw_bucket_name" {
+variable "bucket_name" {
   type        = string
-  description = "lirw_bucket_name variable"
+  description = "bucket_name variable"
 }
 
 variable "pub_sub_1a_id" {

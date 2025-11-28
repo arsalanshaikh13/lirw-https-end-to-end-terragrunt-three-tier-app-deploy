@@ -15,7 +15,7 @@ resource "null_resource" "build_ami" {
       RDS_SG_ID                       = var.db_sg_id
       s3_ssm_cw_instance_profile_name = var.s3_ssm_cw_instance_profile_name
       internal_alb_dns_name           = var.internal_alb_dns_name
-      bucket_name                     = var.lirw_bucket_name
+      bucket_name                     = var.bucket_name
       aws_region                      = var.region
       ssh_interface                   = var.ssh_interface
       ssh_username                    = var.ssh_username
