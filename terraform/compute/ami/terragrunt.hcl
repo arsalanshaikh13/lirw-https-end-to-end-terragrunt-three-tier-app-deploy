@@ -142,7 +142,7 @@ terraform {
 # Generate extended provider block (adds local & null)
 generate "provider_compute" {
   path      = "provider.tf"
-  if_exists = "overwrite"
+  if_exists = "overwrite_terragrunt"
   contents  = <<EOF
 terraform {
   required_version = "${local.provider_version["terraform"]}"

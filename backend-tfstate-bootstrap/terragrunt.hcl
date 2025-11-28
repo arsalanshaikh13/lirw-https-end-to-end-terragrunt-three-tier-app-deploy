@@ -30,6 +30,7 @@ locals {
   region              = local.config_hcl.locals.region
   backend_bucket_name = local.config_hcl.locals.backend_bucket_name
   dynamodb_table      = local.config_hcl.locals.dynamodb_table
+  environment      = local.config_hcl.locals.environment
   # terraform_required_version    = local.config_hcl.locals.terraform_required_version
   # aws_provider_version      = local.config_hcl.locals.aws_provider_version
   provider_version      = local.config_hcl.locals.provider_version
@@ -38,7 +39,7 @@ locals {
 # Automatically generate provider.tf for all subfolders
 generate "provider" {
   path      = "provider.tf"
-  if_exists = "overwrite"
+  if_exists = "overwrite_terragrunt"
   contents  = <<EOF
 terraform {
   required_version = "${local.provider_version["terraform"]}"
@@ -61,4 +62,6 @@ inputs = {
   backend_bucket_name = local.backend_bucket_name
   dynamodb_table      = local.dynamodb_table
   region              = local.region
+  environment              = local.environment
+
 }
