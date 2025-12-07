@@ -12,7 +12,9 @@ include "global_mocks" {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/s3"
+  # source = "${path_relative_from_include("root")}/modules/s3"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//s3?version=1.0.0-lirw-packer"
+
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -24,7 +26,7 @@ terraform {
     ]
 
     # required_var_files = ["terraform.tfvars"]
-    # required_var_files = ["${get_parent_terragrunt_dir()}/configuration/dev/us-east-1/app/app.tfvars"]
+    # required_var_files = ["${get_parent_terragrunt_dir()}/configuration/dev/us-east-1/app/app.tfvars?version=1.0.0-lirw-packer?version=1.0.0-lirw-packer"]
     # required_var_files = ["${get_parent_terragrunt_dir()}/configuration/${basename(dirname(dirname(get_terragrunt_dir())))}/${basename(dirname(get_terragrunt_dir()))}/${basename(get_terragrunt_dir())}/app.tfvars"]
     # required_var_files = ["${get_parent_terragrunt_dir()}/configuration/terraform.tfvars"]
     # required_var_files = ["${path_relative_from_include("root")}/configuration/terraform.tfvars"]

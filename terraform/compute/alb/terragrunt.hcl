@@ -10,7 +10,8 @@ include "global_mocks" {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/compute/alb"
+  # source = "${path_relative_from_include("root")}/modules/compute/alb"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//compute/alb?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -86,9 +87,9 @@ dependency "vpc" {
   mock_outputs                            = include.global_mocks.locals.global_mock_outputs
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
-dependency "sg" {
-  # config_path                             = "../../network/sg"
-  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/sg"
+dependency "security-group" {
+  # config_path                             = "../../network/security-group"
+  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/security-group"
   mock_outputs                            = include.global_mocks.locals.global_mock_outputs
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
@@ -99,14 +100,14 @@ dependency "acm" {
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
 inputs = {
-  project_name       = dependency.vpc.outputs.project_name
-  pub_sub_1a_id      = dependency.vpc.outputs.pub_sub_1a_id
-  pub_sub_2b_id      = dependency.vpc.outputs.pub_sub_2b_id
-  pri_sub_5a_id      = dependency.vpc.outputs.pri_sub_5a_id
-  pri_sub_6b_id      = dependency.vpc.outputs.pri_sub_6b_id
-  vpc_id             = dependency.vpc.outputs.vpc_id
-  alb_sg_id          = dependency.sg.outputs.alb_sg_id
-  internal_alb_sg_id = dependency.sg.outputs.internal_alb_sg_id
+  project_name        = dependency.vpc.outputs.project_name
+  pub_sub_1a_id       = dependency.vpc.outputs.pub_sub_1a_id
+  pub_sub_2b_id       = dependency.vpc.outputs.pub_sub_2b_id
+  pri_sub_5a_id       = dependency.vpc.outputs.pri_sub_5a_id
+  pri_sub_6b_id       = dependency.vpc.outputs.pri_sub_6b_id
+  vpc_id              = dependency.vpc.outputs.vpc_id
+  alb_sg_id           = dependency.security-group.outputs.alb_sg_id
+  internal_alb_sg_id  = dependency.security-group.outputs.internal_alb_sg_id
   acm_certificate_arn = dependency.acm.outputs.acm_certificate_arn
 }
 # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --  plan 

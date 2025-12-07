@@ -112,7 +112,7 @@ variable "volume_size" {
   type        = number
   description = "volume storage size"
 }
-variable "environment" {
+variable "environment_stage" {
   type        = string
   default     = ""
   description = "environment - dev, prod, staging"
@@ -183,7 +183,7 @@ source "amazon-ebs" "backend" {
 
   tags = {
     Component   = "backend"
-    Environment = var.environment
+    Environment = var.environment_stage
     Name        = var.backend_ami_name
   }
 
@@ -273,6 +273,7 @@ build {
         db_password                = var.db_password
         db_name                    = var.db_name
         aws_region                 = var.aws_region
+        environment_stage          = var.environment_stage
         ssh_username               = var.ssh_username
       })
     ]

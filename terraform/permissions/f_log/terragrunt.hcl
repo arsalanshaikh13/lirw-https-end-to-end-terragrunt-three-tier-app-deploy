@@ -10,7 +10,8 @@ include "global_mocks" {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/permissions/f_log"
+  # source = "${path_relative_from_include("root")}/modules/permissions/f_log"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//permissions/f_log?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -30,7 +31,7 @@ terraform {
     required_var_files = ["${get_parent_terragrunt_dir("root")}/configuration/terraform.tfvars"]
   }
 
-  
+
   before_hook "pre_fmt" {
     commands = ["plan"]
     execute  = ["bash", "-c", "echo 'Running terraform format'; terraform fmt --recursive"]

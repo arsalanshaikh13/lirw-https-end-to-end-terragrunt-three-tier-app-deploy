@@ -11,7 +11,8 @@ include "global_mocks" {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/hosting/waf"
+  # source = "${path_relative_from_include("root")}/modules/hosting/waf"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//hosting/waf?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.

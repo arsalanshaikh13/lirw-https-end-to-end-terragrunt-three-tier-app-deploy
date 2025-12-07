@@ -11,13 +11,14 @@ include "global_mocks" {
 
 locals {
   region = include.root.locals.region
-    # aws_provider_version = include.root.locals.aws_provider_version
+  # aws_provider_version = include.root.locals.aws_provider_version
   # local_provider_version = include.root.locals.local_provider_version
   provider_version = include.root.locals.provider_version
-  
+
   # original_dir = "${get_original_terragrunt_dir()}"
   # frontend_ami_file = "${local.original_dir}/modules/asg/ami_ids/frontend_ami.txt"
-  ami_folder        = "${get_parent_terragrunt_dir("root")}/modules/compute/asg/ami_ids"
+  # ami_folder        = "${get_parent_terragrunt_dir("root")}/modules/compute/asg/ami_ids"
+  ami_folder        = "${dirname(get_terragrunt_dir())}/asg/ami_ids"
   frontend_ami_file = "${local.ami_folder}/frontend_ami.txt"
   backend_ami_file  = "${local.ami_folder}/backend_ami.txt"
   packer_folder     = "${get_parent_terragrunt_dir("root")}/packer"
@@ -27,7 +28,8 @@ locals {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/compute/ami"
+  # source = "${path_relative_from_include("root")}/modules/compute/ami"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//compute/ami?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -176,9 +178,9 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
 
-dependency "sg" {
-  # config_path                             = "../../sg/vpc"
-  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/sg"
+dependency "security-group" {
+  # config_path                             = "../../network/security-group"
+  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/security-group"
   mock_outputs                            = include.global_mocks.locals.global_mock_outputs
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
@@ -219,16 +221,17 @@ inputs = {
   vpc_id        = dependency.vpc.outputs.vpc_id
   pub_sub_1a_id = dependency.vpc.outputs.pub_sub_1a_id
   # Get RDS details from Terraform state
-  db_dns_address                = dependency.rds.outputs.db_dns_address
-  db_sg_id                        = dependency.sg.outputs.db_sg_id
+  db_dns_address                  = dependency.rds.outputs.db_dns_address
+  db_sg_id                        = dependency.security-group.outputs.db_sg_id
   s3_ssm_cw_instance_profile_name = dependency.iam_role.outputs.s3_ssm_cw_instance_profile_name
   internal_alb_dns_name           = dependency.alb.outputs.internal_alb_dns_name
-  bucket_name               = dependency.s3.outputs.bucket_name
+  bucket_name                     = dependency.s3.outputs.bucket_name
   # server_key_name = dependency.key.outputs.server_key_name
   # client_key_name = dependency.key.outputs.client_key_name
 
   # packer_folder                   = "${path_relative_from_include("root")}/packer"
-  packer_folder = "${local.packer_folder}"
+  packer_folder   = "${local.packer_folder}"
+  resource_script = "${get_terragrunt_dir()}/null_resource.sh"
 
 }
 # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --  plan 

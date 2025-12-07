@@ -20,7 +20,8 @@ const dbPromise = (async () => {
       user: dbcreds.DB_USER,
       password: dbcreds.DB_PASSWORD,
       database: dbcreds.DB_DATABASE,
-      port: "3306",
+      port: dbcreds.DB_PORT,
+      // port: "3306",
     });
 
     //   db.connect((err) => {

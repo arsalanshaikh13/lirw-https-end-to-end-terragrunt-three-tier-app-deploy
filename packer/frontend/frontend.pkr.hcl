@@ -63,10 +63,10 @@ variable "volume_size" {
   # default     = ""
   description = "volume storage size"
 }
-variable "environment" {
+variable "environment_stage" {
   type        = string
   default     = ""
-  description = "environment - dev, prod, staging"
+  description = "environment_stage - dev, prod, staging"
 }
 variable "frontend_ami_name" {
   type        = string
@@ -128,7 +128,7 @@ source "amazon-ebs" "frontend" {
   ami_description = "Frontend AMI with Nginx and Git and react"
   tags = {
     Name        = var.frontend_ami_name
-    Environment = var.environment
+    environment_stage = var.environment_stage
     Component   = "frontend"
   }
 

@@ -4,4 +4,16 @@ digraph G {
   "aws_key_pair.client_key" [label="aws_key_pair.client_key"];
   "aws_key_pair.nat-bastion" [label="aws_key_pair.nat-bastion"];
   "aws_key_pair.server_key" [label="aws_key_pair.server_key"];
+  "local_file.client_private_key" [label="local_file.client_private_key"];
+  "local_file.nat_bastion_private_key" [label="local_file.nat_bastion_private_key"];
+  "local_file.server_private_key" [label="local_file.server_private_key"];
+  "tls_private_key.client_key_ssh" [label="tls_private_key.client_key_ssh"];
+  "tls_private_key.nat-bastion_key_ssh" [label="tls_private_key.nat-bastion_key_ssh"];
+  "tls_private_key.server_key_ssh" [label="tls_private_key.server_key_ssh"];
+  "aws_key_pair.client_key" -> "tls_private_key.client_key_ssh";
+  "aws_key_pair.nat-bastion" -> "tls_private_key.nat-bastion_key_ssh";
+  "aws_key_pair.server_key" -> "tls_private_key.server_key_ssh";
+  "local_file.client_private_key" -> "tls_private_key.client_key_ssh";
+  "local_file.nat_bastion_private_key" -> "tls_private_key.nat-bastion_key_ssh";
+  "local_file.server_private_key" -> "tls_private_key.server_key_ssh";
 }

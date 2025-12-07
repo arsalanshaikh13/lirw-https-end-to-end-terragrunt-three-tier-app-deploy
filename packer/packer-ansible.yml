@@ -6,6 +6,7 @@
   gather_facts: false
 
   vars:
+    environment_stage: "{{ lookup('env', 'environment_stage') }}"
     packer_folder: "{{ lookup('env', 'packer_folder') }}"
     # backend_ami_path: "{{ playbook_dir | dirname }}/terraform/compute/modules/asg/ami_ids/backend_ami.txt"
     # frontend_ami_path: "{{ playbook_dir | dirname }}/terraform/compute/modules/asg/ami_ids/frontend_ami.txt"
@@ -48,6 +49,7 @@
             {
               set -euo pipefail
               echo "No manifest.json found – safe to run Packer for backend."
+              echo "{{ environment_stage}} : environment variable"
               # export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
               # export ANSIBLE_STDOUT_CALLBACK=yaml
               ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_backend_output.log

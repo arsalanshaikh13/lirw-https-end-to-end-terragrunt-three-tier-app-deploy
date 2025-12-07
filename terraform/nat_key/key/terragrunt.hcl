@@ -11,18 +11,22 @@ include "global_mocks" {
 }
 
 locals {
-  key_folder        = "${get_parent_terragrunt_dir("root")}/modules/nat_key/key"
+  # key_folder        = "${get_parent_terragrunt_dir("root")}/modules/nat_key/key"
   # client_key = "${local.ami_folder}/frontend_ami.txt"
   # server_k  = "${local.ami_folder}/backend_ami.txt"
   # packer_folder     = "${get_parent_terragrunt_dir("root")}/packer"
   # frontend_manifest = "${local.packer_folder}/frontend/manifest.json"
   # backend_manifest  = "${local.packer_folder}/backend/manifest.json"
+  region           = include.root.locals.region
+  provider_version = include.root.locals.provider_version
+
 }
 
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/nat_key/key"
+  # source = "${path_relative_from_include("root")}/modules/nat_key/key"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//nat_key/key?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -52,11 +56,12 @@ terraform {
     commands = ["plan"]
     execute  = ["bash", "-c", "echo 'Running terraform format'; terraform fmt --recursive"]
   }
-  before_hook "check_for_ssh_keys" {
-    commands = ["plan"]
-    # execute  = ["bash", "-c", "./key.sh '${get_parent_terragrunt_dir("root")}/modules/nat_key/key'"]
-    execute  = ["bash", "-c", "./key.sh ${local.key_folder}"]
-  }
+  # before_hook "check_for_ssh_keys" {
+  #   commands = ["plan"]
+  #   # execute  = ["bash", "-c", "./key.sh '${get_parent_terragrunt_dir("root")}/modules/nat_key/key'"]
+  #   execute = ["bash", "-c", "./key.sh ${local.key_folder}"]
+  # }
+  
   before_hook "pre_validate" {
     commands = ["plan"]
     execute  = ["bash", "-c", "echo 'Running terraform validate'; terraform validate"]
@@ -67,9 +72,9 @@ terraform {
     execute = [
       "bash", "-c",
       <<-EOT
-        echo "Deleting SSH keys from ${local.key_folder} folder"
-        cd "${local.key_folder}"
-        rm -f nat-bastion *.pub *_key
+        echo "Deleting SSH keys from ${get_original_terragrunt_dir()} folder"
+        cd "${get_original_terragrunt_dir()}"
+        rm -f *.pem
       EOT
     ]
   }
@@ -96,6 +101,49 @@ terraform {
     execute  = ["bash", "-c", "echo '✅ Resources created successfully'"]
   }
 
+  # after_hook "post_apply_find" {
+  #   commands = ["apply"]
+  #   execute = [
+  #     "bash", "-c",
+  #     <<-EOT
+  #       DEST="${get_original_terragrunt_dir()}"
+  #       echo "dest: $DEST"
+        
+  #       find . -type f -name '*.pem' -print0 |
+  #       xargs -0 -I{} sh -c 'echo $1 && chmod 400 $1 && cp $1 $2' _ {} $DEST
+  #     EOT
+  #   ]
+  # }
+
+  after_hook "post_apply_find" {
+    commands = ["apply"]
+    execute = [
+      "bash", "-c",
+      <<-EOT
+        DEST="${get_original_terragrunt_dir()}"
+        echo "Destination: $DEST"
+
+        find . -type f -name '*.pem' -print0 |
+        xargs -0 -I{} sh -c '
+          src="$1"
+          dest_dir="$2"
+          filename="$(basename "$src")"
+          dest_file="$dest_dir/$filename"
+
+          if [ -f "$dest_file" ]; then
+            echo "Skipping (exists): $dest_file"
+            exit 0
+          fi
+
+          echo "Copying: $src -> $dest_file"
+          chmod 400 "$src"
+          cp "$src" "$dest_file"
+        ' _ "{}" "$DEST"
+      EOT
+    ]
+  }
+
+
   error_hook "Display ERROR" {
     commands = ["plan", "apply", "destroy"]
     execute  = ["echo", "Error occured while running the operation!!!"]
@@ -109,6 +157,36 @@ terraform {
     execute  = ["bash", "-c", "echo '✅ Resources deleted successfully'"]
   }
 }
+
+# Generate extended provider block (adds local & null)
+generate "provider_compute" {
+  path      = "provider.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
+terraform {
+  required_version = "${local.provider_version["terraform"]}"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "${local.provider_version["aws"]}"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "${local.provider_version["local"]}"
+    }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "${local.provider_version["tls"]}"
+    }
+  }
+}
+provider "aws" {
+  region = "${local.region}"
+}
+
+EOF
+}
+
 
 
 # dependency "backend" {

@@ -6,8 +6,10 @@
 
   vars:
     terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key"
-    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/modules/compute/asg/ami_ids"
-    key_file_path: "{{ playbook_dir | dirname | dirname }}/modules/nat_key/key/client_key"
+    # ami_output_dir: "{{ playbook_dir | dirname | dirname }}/modules/compute/asg/ami_ids"
+    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform/compute/asg/ami_ids"
+    key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key/client_key.pem"
+    # key_file_path: "{{ playbook_dir | dirname | dirname }}/modules/nat_key/key/client_key"
     packer_file: "frontend.pkr.hcl"
 
     aws_region: "{{ lookup('env', 'aws_region') }}"
@@ -23,7 +25,7 @@
     s3_ssm_cw_instance_profile_name: "{{ lookup('env', 's3_ssm_cw_instance_profile_name') }}"
     bucket_name: "{{ lookup('env', 'bucket_name') }}"
     internal_alb_dns_name: "{{ lookup('env', 'internal_alb_dns_name') }}"
-    environment: "{{ lookup('env', 'environment') }}"
+    environment_stage: "{{ lookup('env', 'environment_stage') }}"
 
     # Cleanup tracking
     build_failed: false
@@ -117,7 +119,7 @@
               -var "s3_ssm_cw_instance_profile_name={{ s3_ssm_cw_instance_profile_name }}" \
               -var "bucket_name={{ bucket_name }}" \
               -var "internal_alb_dns_name={{ internal_alb_dns_name }}" \
-              -var "environment={{ environment }}" \
+              -var "environment_stage={{ environment_stage }}" \
               -var "client_key_name={{ client_key_name.stdout }}" \
               -var "key_file_path={{ key_file_path }}" \
               {{ packer_file }} | tee >(grep -Eo 'ami-[a-z0-9]{17}' | tail -n1 > {{ ami_output_dir }}/frontend_ami.txt)

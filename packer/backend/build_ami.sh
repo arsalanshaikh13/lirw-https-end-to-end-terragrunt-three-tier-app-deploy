@@ -182,6 +182,9 @@ PACKER_LOG=1 PACKER_LOG_PATH=$LOG_FILE packer build \
   -var "server_key_name=$server_key_name" \
   -var "key_file_path=$key_file_path" \
   backend.pkr.hcl | tee >(grep -Eo 'ami-[a-z0-9]{17}' | tail -n1 > ../../modules/compute/asg/ami_ids/backend_ami.txt)
+  # backend.pkr.hcl | tee >(grep -Eo 'ami-[a-z0-9]{17}' | tail -n1 > ../../terraform_dev/compute/asg/ami_ids/backend_ami.txt)
+  # backend.pkr.hcl | tee >(grep -Eo 'ami-[a-z0-9]{17}' | tail -n1 > ../../${current_dir}/compute/asg/ami_ids/backend_ami.txt)
+  # backend.pkr.hcl | tee >(grep -Eo 'ami-[a-z0-9]{17}' | tail -n1 > ../../${basename(current_dir)}/compute/asg/ami_ids/backend_ami.txt)
 
 
 # After packer finishes, clean up the log

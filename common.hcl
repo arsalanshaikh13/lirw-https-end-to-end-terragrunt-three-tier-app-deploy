@@ -3,14 +3,11 @@
 
 locals {
 
-  config_hcl         = read_terragrunt_config("${get_repo_root()}/configuration/config.hcl")
+  config_hcl          = read_terragrunt_config("${get_repo_root()}/configuration/config.hcl")
   region              = local.config_hcl.locals.region
   backend_bucket_name = local.config_hcl.locals.backend_bucket_name
   dynamodb_table      = local.config_hcl.locals.dynamodb_table
-  # aws_provider_version      = local.config_hcl.locals.aws_provider_version
-  # local_provider_version      = local.config_hcl.locals.local_provider_version
-  # null_provider_version      = local.config_hcl.locals null_provider_version
-  provider_version      = local.config_hcl.locals.provider_version
+  provider_version = local.config_hcl.locals.provider_version
 }
 
 #  Automatically generate provider.tf for all subfolders
@@ -51,19 +48,19 @@ provider "aws" {
 EOF
 }
 
-# generate "debug" {
-#   path = "debug_outputs.txt"
-#   if_exists = "overwrite"
-#   contents = <<EOF
-#   terragrunt_dir: ${get_terragrunt_dir()}
+generate "debug" {
+  path      = "debug_outputs.txt"
+  if_exists = "overwrite"
+  contents  = <<EOF
+  terragrunt_dir: ${get_terragrunt_dir()}
 
-# original_terragrunt_dir: ${get_original_terragrunt_dir()}
+original_terragrunt_dir: ${get_original_terragrunt_dir()}
 
-# get_repo_root: ${get_repo_root()}
+get_repo_root: ${get_repo_root()}
 
-# get_parent_terragrunt_dir: ${get_parent_terragrunt_dir()}
+get_parent_terragrunt_dir: ${get_parent_terragrunt_dir()}
 
+EOF
+}
 # get_working_dir: ${get_working_dir()}
-# EOF
-# }
 

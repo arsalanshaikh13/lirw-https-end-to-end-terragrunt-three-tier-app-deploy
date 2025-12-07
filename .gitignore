@@ -83,3 +83,6 @@ terraform/logs/
 *.dhcl
 terraform/**.tf
 notes.txt
+configuration/dev/**
+configuration/prod/**
+modules

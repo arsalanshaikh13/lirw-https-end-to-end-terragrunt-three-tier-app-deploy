@@ -6,8 +6,10 @@
 
   vars:
     terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key"
-    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/modules/compute/asg/ami_ids"
-    key_file_path: "{{ playbook_dir | dirname | dirname }}/modules/nat_key/key/server_key"
+    # ami_output_dir: "{{ playbook_dir | dirname | dirname }}/modules/compute/asg/ami_ids"
+    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform/compute/asg/ami_ids"
+    # key_file_path: "{{ playbook_dir | dirname | dirname }}/modules/nat_key/key/server_key"
+    key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key/server_key.pem"
     packer_template: "backend.pkr.hcl"
 
     # Build tracking
@@ -38,7 +40,7 @@
     backend_volume_type: "{{ lookup('env', 'backend_volume_type') }}"
     backend_volume_size: "{{ lookup('env', 'backend_volume_size') }}"
     backend_ami_name: "{{ lookup('env', 'backend_ami_name') }}"
-    environment: "{{ lookup('env', 'environment') }}"
+    environment_stage: "{{ lookup('env', 'environment_stage') }}"
 
   pre_tasks:
     - name: Initialize Packer plugins
@@ -215,7 +217,7 @@
               -var "volume_type={{ backend_volume_type }}" \
               -var "volume_size={{ backend_volume_size }}" \
               -var "backend_ami_name={{ backend_ami_name }}" \
-              -var "environment={{ environment }}" \
+              -var "environment_stage={{ environment_stage }}" \
               -var "server_key_name={{ server_key_name.stdout }}" \
               -var "key_file_path={{ key_file_path }}" \
               {{ packer_template }} | tee >(grep -Eo 'ami-[a-z0-9]{17}' | tail -n1 > {{ ami_output_dir }}/backend_ami.txt)

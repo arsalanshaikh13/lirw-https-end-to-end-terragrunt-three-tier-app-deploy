@@ -12,6 +12,7 @@
     db_name: "{{ db_name | default(lookup('env', 'db_name')) }}"
     aws_region: "{{ aws_region | default(lookup('env', 'aws_region')) }}"
     ssh_username: "{{ ssh_username | default(lookup('env', 'ssh_username')) }}"
+    environment_stage: "{{ environment_stage | default(lookup('env', 'environment_stage')) }}"
     repo_dir: /home/{{ ssh_username }}/backend
     log_dir: /home/{{ ssh_username }}/backend/logs
     env_file: /home/{{ ssh_username }}/backend/.env
@@ -51,6 +52,12 @@
         path: "{{ repo_dir }}/configs/DbConfig.js"
         regexp: "<region>"
         replace: "{{ aws_region }}"
+
+    - name: Replace environment placeholder in DbConfig.js
+      ansible.builtin.replace:
+        path: "{{ repo_dir }}/configs/DbConfig.js"
+        regexp: "<environment>"
+        replace: "{{ environment_stage }}"
 
     - name: Replace db name placeholder in db.sql
       ansible.builtin.replace:

@@ -17,7 +17,8 @@ locals {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/compute/asg"
+  # source = "${path_relative_from_include("root")}/modules/compute/asg"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//compute/asg?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -117,8 +118,8 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
 
-dependency "sg" {
-  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/sg"
+dependency "security-group" {
+  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/security-group"
   mock_outputs                            = include.global_mocks.locals.global_mock_outputs
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
@@ -168,15 +169,15 @@ inputs = {
   pri_sub_4b_id                   = dependency.vpc.outputs.pri_sub_4b_id
   pri_sub_5a_id                   = dependency.vpc.outputs.pri_sub_5a_id
   pri_sub_6b_id                   = dependency.vpc.outputs.pri_sub_6b_id
-  client_sg_id                    = dependency.sg.outputs.client_sg_id
-  server_sg_id                    = dependency.sg.outputs.server_sg_id
+  client_sg_id                    = dependency.security-group.outputs.client_sg_id
+  server_sg_id                    = dependency.security-group.outputs.server_sg_id
   tg_arn                          = dependency.alb.outputs.tg_arn
   internal_tg_arn                 = dependency.alb.outputs.internal_tg_arn
   internal_alb_dns_name           = dependency.alb.outputs.internal_alb_dns_name
   s3_ssm_cw_instance_profile_name = dependency.iam_role.outputs.s3_ssm_cw_instance_profile_name
   db_dns_address                  = dependency.rds.outputs.db_dns_address
   db_endpoint                     = dependency.rds.outputs.db_endpoint
-  bucket_name                     = dependency.s3.outputs.lirw_bucket_name
+  bucket_name                     = dependency.s3.outputs.bucket_name
   frontend_ami_id                 = dependency.ami.outputs.frontend_ami_id
   backend_ami_id                  = dependency.ami.outputs.backend_ami_id
   client_key_name                 = dependency.key.outputs.client_key_name

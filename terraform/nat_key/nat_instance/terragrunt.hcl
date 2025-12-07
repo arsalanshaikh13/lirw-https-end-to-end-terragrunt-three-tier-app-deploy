@@ -10,7 +10,8 @@ include "global_mocks" {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/nat_key/nat_instance"
+  # source = "${path_relative_from_include("root")}/modules/nat_key/nat_instance"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//nat_key/nat_instance?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -106,7 +107,7 @@ inputs = {
   pri_rt_a_id                     = dependency.vpc.outputs.pri_rt_a_id
   pri_rt_b_id                     = dependency.vpc.outputs.pri_rt_b_id
   s3_ssm_cw_instance_profile_name = dependency.iam_role.outputs.s3_ssm_cw_instance_profile_name
-  nat_bastion_key_name = dependency.key.outputs.nat_bastion_key_name
+  nat_bastion_key_name            = dependency.key.outputs.nat_bastion_key_name
 }
 
 # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --  plan 

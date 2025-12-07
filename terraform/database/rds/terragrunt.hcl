@@ -10,7 +10,8 @@ include "global_mocks" {
 
 terraform {
   # source = "../../../../modules/app"
-  source = "${path_relative_from_include("root")}/modules/database/rds"
+  # source = "${path_relative_from_include("root")}/modules/database/rds"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//database/rds?version=1.0.0-lirw-packer"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
@@ -87,14 +88,14 @@ dependency "vpc" {
   mock_outputs                            = include.global_mocks.locals.global_mock_outputs
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
-dependency "sg" {
-  # config_path                             = "../../sg/vpc"
-  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/sg"
+dependency "security-group" {
+  # config_path                             = "../../network/security-group"
+  config_path                             = "${dirname(dirname(get_terragrunt_dir()))}/network/security-group"
   mock_outputs                            = include.global_mocks.locals.global_mock_outputs
   mock_outputs_allowed_terraform_commands = ["plan"]
 }
 inputs = {
-  db_sg_id      = dependency.sg.outputs.db_sg_id
+  db_sg_id      = dependency.security-group.outputs.db_sg_id
   pri_sub_7a_id = dependency.vpc.outputs.pri_sub_7a_id
   pri_sub_8b_id = dependency.vpc.outputs.pri_sub_8b_id
 }

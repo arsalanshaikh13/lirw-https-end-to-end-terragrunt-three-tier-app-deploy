@@ -2,19 +2,21 @@
 set -euo pipefail
 echo "Cleaning up AMIs"
 
+# export AWS_REGION="us-east-1"
 export AWS_REGION="$region"
 declare -A AMI_FILES=(
-  # ["frontend"]="${frontend_ami_file}/modules/asg/ami_ids/frontend_ami.txt"
   ["frontend"]="${frontend_ami_file}"
   ["backend"]="${backend_ami_file}"
 )
+  # ["backend"]="/mnt/c/Users/DELL/ArsVSCode/CS50p_project/project_aFinal/website/website2_0/animations/scroll/aws_three_tier_arch/three-tier-terragrunt/lirw-terragrunt-https/terraform/compute/asg/ami_ids/backend_ami.txt"
+  # ["frontend"]="/mnt/c/Users/DELL/ArsVSCode/CS50p_project/project_aFinal/website/website2_0/animations/scroll/aws_three_tier_arch/three-tier-terragrunt/lirw-terragrunt-https/terraform/compute/asg/ami_ids/frontend_ami.txt"
+  # ["frontend"]="${frontend_ami_file}/modules/asg/ami_ids/frontend_ami.txt"
 
 echo "frontend and backend ami file : $frontend_ami_file &&& $backend_ami_file";
+# echo "frontend and backend ami file : ${AMI_FILES["frontend"]} &&& ${AMI_FILES["backend"]}";
 
   # ["frontend"]="terraform/compute/modules/asg/ami_ids/frontend_ami.txt"
-  # ["frontend"]="/mnt/c/Users/DELL/ArsVSCode/CS50p_project/project_aFinal/website/${web}/animations/scroll/aws_three_tier_arch/lirw-three-tier/folder-based-project/terraform/compute/modules/asg/ami_ids/frontend_ami.txt"
   # # ["backend"]="terraform/compute/modules/asg/ami_ids/backend_ami.txt"
-  # ["backend"]="/mnt/c/Users/DELL/ArsVSCode/CS50p_project/project_aFinal/website/${web}/animations/scroll/aws_three_tier_arch/lirw-three-tier/folder-based-project/terraform/compute/modules/asg/ami_ids/backend_ami.txt"
   # ["backend"]="terraform/compute/modules/asg/ami_ids/backend_ami.txt"
 
 # Loop over frontend and backend AMIs
