@@ -1,7 +1,0 @@
-digraph G {
-  rankdir = "RL";
-  node [shape = rect, fontname = "sans-serif"];
-  "aws_s3_bucket.bucket" [label="aws_s3_bucket.bucket"];
-  "aws_s3_object.app_code_upload" [label="aws_s3_object.app_code_upload"];
-  "aws_s3_object.app_code_upload" -> "aws_s3_bucket.bucket";
-}
