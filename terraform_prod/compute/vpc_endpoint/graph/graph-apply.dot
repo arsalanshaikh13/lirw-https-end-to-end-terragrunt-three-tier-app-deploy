@@ -1,0 +1,10 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "aws_security_group.vpc_endpoint_sg" [label="aws_security_group.vpc_endpoint_sg"];
+  "aws_vpc_endpoint.logs" [label="aws_vpc_endpoint.logs"];
+  "aws_vpc_endpoint.s3_gateway_vpc_flow_logs" [label="aws_vpc_endpoint.s3_gateway_vpc_flow_logs"];
+  "aws_vpc_endpoint.ssm" [label="aws_vpc_endpoint.ssm"];
+  "aws_vpc_endpoint.logs" -> "aws_security_group.vpc_endpoint_sg";
+  "aws_vpc_endpoint.ssm" -> "aws_security_group.vpc_endpoint_sg";
+}

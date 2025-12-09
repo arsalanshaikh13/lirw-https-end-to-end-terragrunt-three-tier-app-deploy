@@ -211,6 +211,6 @@ build {
   #   inline = ["echo 'rubber ducky'> ducky.txt"]
   # }
   post-processor "manifest" {
-    output = "manifest.json"
+    output = "manifest-${var.environment_stage}.json"
   }
 }

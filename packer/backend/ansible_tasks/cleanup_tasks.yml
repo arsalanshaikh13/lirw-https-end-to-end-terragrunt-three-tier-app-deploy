@@ -77,7 +77,8 @@
     # List any partial or failed AMI builds
     aws ec2 describe-images \
       --owners self \
-      --filters "Name=name,Values={{ backend_ami_name }}*" \
+      --filters "Name=name,Values={{ backend_ami_name }}" \
+      --region "{{ aws_region }}" \
       --query "Images[*].{ID:ImageId,Name:Name,State:State}" \
       --output table
   register: ami_check

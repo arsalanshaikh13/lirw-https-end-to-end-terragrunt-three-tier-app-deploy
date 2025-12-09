@@ -1,0 +1,10 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "aws_autoscaling_group.asg_name" [label="aws_autoscaling_group.asg_name"];
+  "aws_autoscaling_group.server_asg_name" [label="aws_autoscaling_group.server_asg_name"];
+  "aws_launch_template.lt_name" [label="aws_launch_template.lt_name"];
+  "aws_launch_template.server_lt_name" [label="aws_launch_template.server_lt_name"];
+  "aws_autoscaling_group.asg_name" -> "aws_launch_template.lt_name";
+  "aws_autoscaling_group.server_asg_name" -> "aws_launch_template.server_lt_name";
+}

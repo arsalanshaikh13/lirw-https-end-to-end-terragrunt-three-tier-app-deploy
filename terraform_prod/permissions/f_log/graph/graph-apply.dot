@@ -1,0 +1,19 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "data.aws_caller_identity.current" [label="data.aws_caller_identity.current"];
+  "aws_flow_log.example_vpc_flow_log" [label="aws_flow_log.example_vpc_flow_log"];
+  "aws_s3_bucket.vpc_flow_logs_bucket" [label="aws_s3_bucket.vpc_flow_logs_bucket"];
+  "aws_s3_bucket_acl.acl" [label="aws_s3_bucket_acl.acl"];
+  "aws_s3_bucket_ownership_controls.vpc_flow_logs" [label="aws_s3_bucket_ownership_controls.vpc_flow_logs"];
+  "aws_s3_bucket_policy.vpc_flow_logs" [label="aws_s3_bucket_policy.vpc_flow_logs"];
+  "aws_s3_bucket_public_access_block.vpc_flow_logs" [label="aws_s3_bucket_public_access_block.vpc_flow_logs"];
+  "aws_s3_bucket_server_side_encryption_configuration.SSE_config" [label="aws_s3_bucket_server_side_encryption_configuration.SSE_config"];
+  "aws_flow_log.example_vpc_flow_log" -> "aws_s3_bucket.vpc_flow_logs_bucket";
+  "aws_s3_bucket_acl.acl" -> "aws_s3_bucket_ownership_controls.vpc_flow_logs";
+  "aws_s3_bucket_ownership_controls.vpc_flow_logs" -> "aws_s3_bucket.vpc_flow_logs_bucket";
+  "aws_s3_bucket_policy.vpc_flow_logs" -> "data.aws_caller_identity.current";
+  "aws_s3_bucket_policy.vpc_flow_logs" -> "aws_s3_bucket.vpc_flow_logs_bucket";
+  "aws_s3_bucket_public_access_block.vpc_flow_logs" -> "aws_s3_bucket.vpc_flow_logs_bucket";
+  "aws_s3_bucket_server_side_encryption_configuration.SSE_config" -> "aws_s3_bucket.vpc_flow_logs_bucket";
+}

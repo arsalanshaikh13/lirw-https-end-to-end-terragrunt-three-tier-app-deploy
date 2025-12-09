@@ -12,8 +12,8 @@
     # frontend_ami_path: "{{ playbook_dir | dirname }}/terraform/compute/modules/asg/ami_ids/frontend_ami.txt"
     backend_build_dir: "{{ playbook_dir }}/backend"
     frontend_build_dir: "{{ playbook_dir }}/frontend"
-    backend_manifest_path: "{{ backend_build_dir }}/manifest.json"
-    frontend_manifest_path: "{{ frontend_build_dir }}/manifest.json"
+    backend_manifest_path: "{{ backend_build_dir }}/manifest-{{ environment_stage }}.json"
+    frontend_manifest_path: "{{ frontend_build_dir }}/manifest-{{ environment_stage }}.json"
 
   tasks:
     # - name: Ensure working directory path
@@ -48,11 +48,27 @@
           ansible.builtin.shell: |
             {
               set -euo pipefail
+
+              LOG_DIR="ansible-logs"
+              mkdir -p "$LOG_DIR"
+
+              # Find the highest existing number
+              last_log=$(ls "$LOG_DIR"/*.log 2>/dev/null | sort -V | tail -n 1 || true)
+              if [ -z "$last_log" ]; then
+                next_num=0
+              else
+                last_num=$(basename "$last_log" .log | grep -oE '[0-9]+$' || echo 0)
+                next_num=$((last_num + 1))
+              fi
+
+              LOG_FILE="$LOG_DIR/ansiblelog-{{ environment_stage }}-${next_num}.log"
+
               echo "No manifest.json found – safe to run Packer for backend."
               echo "{{ environment_stage}} : environment variable"
               # export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
               # export ANSIBLE_STDOUT_CALLBACK=yaml
-              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_backend_output.log
+              # ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_backend_output.log
+              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee  ${LOG_FILE}
             }
           args:
             chdir: "{{ backend_build_dir }}"
@@ -79,10 +95,27 @@
           ansible.builtin.shell: |
             {
               set -euo pipefail
+
+
+              LOG_DIR="ansible-logs"
+              mkdir -p "$LOG_DIR"
+
+              # Find the highest existing number
+              last_log=$(ls "$LOG_DIR"/*.log 2>/dev/null | sort -V | tail -n 1 || true)
+              if [ -z "$last_log" ]; then
+                next_num=0
+              else
+                last_num=$(basename "$last_log" .log | grep -oE '[0-9]+$' || echo 0)
+                next_num=$((last_num + 1))
+              fi
+
+              LOG_FILE="$LOG_DIR/ansiblelog-{{ environment_stage }}-${next_num}.log"
+
               echo "No manifest.json found – safe to run Packer for frontend."
               # export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
               # export ANSIBLE_STDOUT_CALLBACK=yaml
-              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_frontend_output.log
+              # ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_frontend_output.log
+              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee  ${LOG_FILE}
             }
           args:
             chdir: "{{ frontend_build_dir }}"

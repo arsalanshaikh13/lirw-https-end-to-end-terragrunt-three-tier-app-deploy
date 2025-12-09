@@ -12,7 +12,7 @@ terragrunt_destroy() {
 destroy() {
   cd $1
   echo "🧹 Starting Terraform cleanup process..."
-  # Folders that should be destroyed in parallel
+#   # Folders that should be destroyed in parallel
   sequential_destroy_zero=(
     "hosting/route53"
     "hosting/cloudfront"  
@@ -59,7 +59,7 @@ sequential_destroy_two=(
   "compute/asg"
   "compute/ami" 
   "compute/alb" 
-
+  "compute/vpc_endpoint"
 )
 
 echo "🔥 Destroying compute stacks sequentially..."
@@ -77,7 +77,6 @@ echo "✅ sequential destroy completed."
 
 
   parallel_destroy_two=(
-  "compute/vpc_endpoint"
   "database/ssm_prm"
   "database/rds"
   "nat_key/key" 
@@ -115,7 +114,6 @@ echo "✅ sequential destroy completed."
 
   for dir in "${sequential_destroy_three[@]}"; do
     echo "🧨 Destroying $dir..."
-    
     terragrunt_destroy "$dir"
 
   done
@@ -124,23 +122,23 @@ echo "✅ sequential destroy completed."
   echo "🎉 All stacks destroyed successfully!"
   cd ..
 }
-# env_folder=("terraform_dev" "terraform_prod" )
-env_folder=("terraform")
+env_folder=("terraform_dev" "terraform_prod" )
+# env_folder=("terraform")
 
 for dir in ${env_folder[@]}; do
   destroy $dir
 done
 
 echo "🎉 destroying  tfstate backend s3 and dynamodb table!"
+wait
 
 backend="backend-tfstate-bootstrap"
 
 # Loop over each environment inside backend folder
 for dir in "$backend"/*; do
-  
   terragrunt_destroy "$dir" &
+done
 
-# done
 echo "⏳ Waiting for tfstate backend s3 and dynamodb table to be destroyed..."
 wait
 echo "🎉 tfstate backend s3 and dynamodb table destroyed successfully  from s3!"

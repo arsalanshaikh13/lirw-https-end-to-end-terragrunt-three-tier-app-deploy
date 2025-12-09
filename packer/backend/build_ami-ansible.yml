@@ -5,11 +5,15 @@
   gather_facts: false
 
   vars:
-    terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key"
+    environment_stage: "{{ environment_stage | default(lookup('env', 'environment_stage')) }}"
+    terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform_{{ environment_stage }}/nat_key/key"
+    # terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key"
     # ami_output_dir: "{{ playbook_dir | dirname | dirname }}/modules/compute/asg/ami_ids"
-    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform/compute/asg/ami_ids"
+    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform_{{ environment_stage }}/compute/asg/ami_ids"
+    # ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform/compute/asg/ami_ids"
     # key_file_path: "{{ playbook_dir | dirname | dirname }}/modules/nat_key/key/server_key"
-    key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key/server_key.pem"
+    key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform_{{ environment_stage }}/nat_key/key/server_key.pem"
+    # key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key/server_key.pem"
     packer_template: "backend.pkr.hcl"
 
     # Build tracking
@@ -93,8 +97,8 @@
         --description "Security group for Packer build {{ backend_ami_name }}"
         --vpc-id "{{ VPC_ID }}"
         --query 'GroupId'
-        --output text
         --region "{{ aws_region }}"
+        --output text
       register: packer_sg
       changed_when: true
       retries: 3
@@ -139,8 +143,8 @@
         --owners amazon
         --filters "Name=name,Values={{ backend_ami_type }}" "Name=state,Values=available"
         --query "sort_by(Images, &CreationDate)[-1].ImageId"
-        --output text
         --region "{{ aws_region }}"
+        --output text
       register: SOURCE_AMI
       changed_when: false
       retries: 3

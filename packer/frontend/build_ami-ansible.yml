@@ -5,10 +5,14 @@
   gather_facts: false
 
   vars:
-    terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key"
+    environment_stage: "{{ lookup('env', 'environment_stage') }}"
+    terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform_{{ environment_stage }}/nat_key/key"
+    # terragrunt_key_dir: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key"
     # ami_output_dir: "{{ playbook_dir | dirname | dirname }}/modules/compute/asg/ami_ids"
-    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform/compute/asg/ami_ids"
-    key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key/client_key.pem"
+    ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform_{{ environment_stage }}/compute/asg/ami_ids"
+    # ami_output_dir: "{{ playbook_dir | dirname | dirname }}/terraform/compute/asg/ami_ids"
+    key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform_{{ environment_stage }}/nat_key/key/client_key.pem"
+    # key_file_path: "{{ playbook_dir | dirname | dirname }}/terraform/nat_key/key/client_key.pem"
     # key_file_path: "{{ playbook_dir | dirname | dirname }}/modules/nat_key/key/client_key"
     packer_file: "frontend.pkr.hcl"
 
@@ -25,7 +29,6 @@
     s3_ssm_cw_instance_profile_name: "{{ lookup('env', 's3_ssm_cw_instance_profile_name') }}"
     bucket_name: "{{ lookup('env', 'bucket_name') }}"
     internal_alb_dns_name: "{{ lookup('env', 'internal_alb_dns_name') }}"
-    environment_stage: "{{ lookup('env', 'environment_stage') }}"
 
     # Cleanup tracking
     build_failed: false
@@ -63,6 +66,7 @@
             --owners amazon
             --filters "Name=name,Values={{ frontend_ami_type }}" "Name=state,Values=available"
             --query "sort_by(Images, &CreationDate)[-1].ImageId"
+            --region "{{ aws_region }}"
             --output text
           register: SOURCE_AMI
           changed_when: false
@@ -103,7 +107,7 @@
         # ---- Packer Build ----
         - name: Build Frontend AMI with Packer
           ansible.builtin.shell: |
-            set -euo pipefail
+            set -xeuo pipefail
             echo "Starting Packer build for Frontend AMI..."
             PACKER_LOG=1 PACKER_LOG_PATH={{ clean_packer_log_path }} packer build \
               -var "aws_region={{ aws_region }}" \

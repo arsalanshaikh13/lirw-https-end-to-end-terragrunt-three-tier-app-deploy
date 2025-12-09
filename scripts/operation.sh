@@ -14,10 +14,10 @@ operation=$1
 # Determine log file name
 case "$operation" in
   startup)
-    file_name="startup-wsl-tf-module-retry-log"
+    file_name="startup-wsl-multi-env -retry-log"
     ;;
   cleanup)
-    file_name="cleanup-wsl-tf-module-retry-log"
+    file_name="cleanup-wsl-multi-env-retry-log"
     ;;
   *)
     echo "Error: Invalid operation '$operation'. Use 'startup' or 'cleanup'"
@@ -26,7 +26,7 @@ case "$operation" in
 esac
 
 # Set up log directory and file path
-LOG_DIR="terraform/logs"
+LOG_DIR="logs"
 mkdir -p "$LOG_DIR"
 
 # Find the highest existing numbered log file
@@ -99,16 +99,18 @@ case "$operation" in
       # cd terraform/hosting
       # pwd
       echo "===== Terragrunt Apply Started at $(date) ====="
-      # TG_PROVIDER_CACHE=1 terragrunt --working-dir terraform/compute/ami force-unlock daec2511-0329-818d-c6c9-7873916b7985
+      # TG_PROVIDER_CACHE=1 terragrunt --working-dir terraform_prod/compute/ami force-unlock  d693a202-9aad-9f4b-b6d6-c0d4f70acd4d
       # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all -- apply -auto-approve --parallelism 50
-      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --working-dir terraform/compute/ami -- apply -auto-approve --parallelism 50
+      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --working-dir terraform_dev/compute/ami -- apply -auto-approve --parallelism 50
+      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --working-dir terraform_prod/compute/ami -- apply -auto-approve --parallelism 50
       # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --working-dir terraform/hosting/cloudfront -- apply -auto-approve --parallelism 50
       # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --working-dir terraform/hosting/route53 -- apply -auto-approve --parallelism 50
-      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all -- plan --parallelism 50
+      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all -- plan --parallelism 50 
       # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all -- state list 
       # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --experiment filter-flag --filter '!nat*' --filter '!f_log*' -- apply --parallelism 50
-      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --experiment filter-flag --filter '!./back*/**' --filter '!aws_secret' --filter '!nat*'  -- apply --parallelism 50
       TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --experiment filter-flag --filter '!./back*/**' --filter '!aws_secret' --filter '!nat*'  -- apply --parallelism 50
+      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --experiment filter-flag --filter '!./back*/**' --filter '!aws_secret' --filter '!nat*'  -- apply --parallelism 50
+      # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --experiment filter-flag --filter '!./back*/**' --filter '!aws_secret' --filter '!nat*'  -- plan --parallelism 50
       # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --experiment filter-flag --filter '!nat* | type=unit' --filter '!f_log* | type=unit' -- apply --parallelism 50
       # TG_PROVIDER_CACHE=1 terragrunt run --non-interactive --all --experiment filter-flag --filter '!./terraform/nat_key/** | type=unit' -- apply --parallelism 50
       # terragrunt find --experiment filter-flag --filter './terraform/compute/** | type=unit' --filter './terraform/nat_key/** | type=unit'

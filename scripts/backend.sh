@@ -77,8 +77,8 @@ set -euo pipefail
 
 
 operation=${1:-startup}  # Default to startup if no arg
-# ENVIRONMENTS=("dev" "prod")
-ENVIRONMENTS=("dev")
+ENVIRONMENTS=("dev" "prod")
+# ENVIRONMENTS=("dev")
 
 # Function to check if backend has resources
 check_backend_state() {

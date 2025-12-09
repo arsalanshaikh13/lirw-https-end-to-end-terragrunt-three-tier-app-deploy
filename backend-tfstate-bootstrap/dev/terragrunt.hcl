@@ -28,7 +28,7 @@ terraform {
 
 locals {
 
-  config_hcl          = read_terragrunt_config("${get_repo_root()}/configuration/config.hcl")
+  config_hcl          = read_terragrunt_config("${get_repo_root()}/configuration/dev/config.hcl")
   region              = local.config_hcl.locals.region
   backend_bucket_name = local.config_hcl.locals.backend_bucket_name
   dynamodb_table      = local.config_hcl.locals.dynamodb_table
