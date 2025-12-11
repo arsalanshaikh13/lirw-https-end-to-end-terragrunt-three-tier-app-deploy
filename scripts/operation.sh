@@ -45,6 +45,9 @@ echo "Logging to: $LOG_FILE"
 
 # Cleanup function
 cleanup() {
+  # chmod u+x cleanup_packer_sg.sh
+  ./scripts/cleanup_packer_sg.sh
+
   echo ""
   echo "Processing log file..."
   if [ -f "$LOG_FILE.tmp" ]; then

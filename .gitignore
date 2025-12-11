@@ -84,3 +84,5 @@ terraform/logs/
 terraform/**.tf
 notes.txt
 modules
+terraform*/graph/**
+terraform*/*/graph/**
