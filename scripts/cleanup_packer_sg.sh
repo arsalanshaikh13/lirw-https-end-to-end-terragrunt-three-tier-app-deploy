@@ -1,3 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+
 cleanup_packer_sg() {
     echo "===== Starting Packer SG Cleanup =====" 
 
