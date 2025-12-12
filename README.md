@@ -77,7 +77,7 @@ additional_domain_name    = "{env}.yourdomain.com"    # Environment-specific sub
 alb_api_domain_name       = "api.yourdomain.com"      # Internal load balancer endpoint
 
 # EC2 Configuration
-instance_type = "t4g.small"  # Default: runs on Amazon Linux 2 (ec2-user)
+instance_type = "t4g.small"  # Default: runs on Amazon Linux 2023 arm64 (ec2-user)
 region        = "us-east-1"
 
 # Add other configuration parameters as needed
@@ -85,8 +85,8 @@ region        = "us-east-1"
 
 **Domain Configuration Notes:**
 
-- `certificate_domain_name`: Primary domain for SSL certificate
-- `additional_domain_name`: Environment subdomain (replace `{env}` with dev, staging, prod, etc.)
+- `certificate_domain_name`: Primary domain for ACM/SSL certificate
+- `additional_domain_name`: Environment subdomain (replace `{env}` with dev, staging, prod, etc.), domain on which the app is hosted
 - `alb_api_domain_name`: API endpoint for internal Application Load Balancer
 
 **⚠️ Domain Requirement:** Your domain must be managed by AWS Route 53 before deployment.
@@ -140,8 +140,9 @@ All operations are logged for debugging and audit purposes:
 
 ```
 project-root/
-├── logs/
-│   └── packer/
+├── logs/                          # complete logs of the full operation
+├── packer/
+│       ├── ansible-logs/          #  Ansible execution logs
 │       ├── backend/
 │       │   ├── ansible-logs/      # Backend Ansible execution logs
 │       │   └── packer-logs/       # Backend Packer build logs
@@ -151,7 +152,7 @@ project-root/
 └── terraform_{env}/
     └── nat_key/
         └── key/
-            └── key.pem            # SSH private key for EC2 access
+            └── nat-bastion-key.pem            # SSH private key for nat instance and bastion host EC2 access
 ```
 
 **Note:** Log directories are created automatically when you run `./scripts/operation.sh startup`
@@ -165,10 +166,10 @@ To SSH into EC2 instances for debugging:
 cd terraform_{env}/nat_key/key/
 
 # Set correct permissions on the key file
-chmod 400 key.pem
+chmod 400 nat-bastion-key.pem
 
 # SSH into your EC2 instance
-ssh -i key.pem ec2-user@<instance-public-ip>
+ssh -i nat-bastion-key.pem ec2-user@<instance-public-ip>
 ```
 
 **Security Note:** The `key.pem` file contains sensitive credentials. Never commit this file to version control.
@@ -228,14 +229,6 @@ ssh -i key.pem ec2-user@<instance-public-ip>
 For issues, questions, or contributions, please:
 
 - Open an issue in the repository
-- Review existing documentation in the `docs/` directory
-- Contact the maintainer team
-
----
-
-## License
-
-[Add your license information here]
 
 ---
 

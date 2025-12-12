@@ -26,6 +26,13 @@ check_command terragrunt
 check_command ansible
 
 
+# Check configured CLI credentials 
+if ! aws sts get-caller-identity >/dev/null 2>&1; then
+    echo "AWS CLI cannot authenticate with current credentials." 
+    echo "❌ ERROR: Invalid or missing AWS credentials."
+    exit 1
+fi
+
 operation=$1
 
 # Determine log file name
