@@ -9,6 +9,23 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
+# Function to check if a command exists
+check_command() {
+    if ! command -v $1 &> /dev/null; then
+        echo "Error: $1 is required but not installed."
+        exit 1
+    fi
+}
+
+# Check required tools
+check_command terraform
+check_command packer
+check_command aws
+check_command jq
+check_command terragrunt
+check_command ansible
+
+
 operation=$1
 
 # Determine log file name

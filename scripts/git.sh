@@ -10,7 +10,8 @@ commit_push() {
 
 delete_tag() {
   local tag_name
-  tag_name=$(git describe --tags)
+  # tag_name=$(git describe --tags)
+  tag_name=$(git tag | tail -n 1)
 
   echo "Deleting tag: $tag_name"
   git tag -d "$tag_name"
