@@ -38,10 +38,10 @@ operation=$1
 # Determine log file name
 case "$operation" in
   startup)
-    file_name="startup-wsl-multi-env -retry-log"
+    file_name="startup-log"
     ;;
   cleanup)
-    file_name="cleanup-wsl-multi-env-retry-log"
+    file_name="cleanup-log"
     ;;
   *)
     echo "Error: Invalid operation '$operation'. Use 'startup' or 'cleanup'"
