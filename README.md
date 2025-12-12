@@ -205,7 +205,26 @@ ssh -i nat-bastion-key.pem ec2-user@<instance-public-ip>
 - **Operating System:** Amazon Linux 2023 arm64 (ec2-user)
 - **Default Region:** us-east-1
 - **Default Instance Type:** t4g.small
-- **Logging:** Automatic (logs/ and ansible-logs/)
+- **Logging:** logs/ and ansible-logs/ folders and the respective log files inside will be created automatically when operation.sh script is running.
+- **change the name of log file**: the log file name inside logs/ folder can be changed inside operation.sh script
+
+```bash
+# ./scripts/operation.sh
+# Determine log file name
+case "$operation" in
+  startup)
+    file_name="startup-log"
+    ;;
+  cleanup)
+    file_name="cleanup-log"
+    ;;
+  *)
+    echo "Error: Invalid operation '$operation'. Use 'startup' or 'cleanup'"
+    exit 1
+    ;;
+esac
+
+```
 
 ---
 
@@ -215,10 +234,7 @@ ssh -i nat-bastion-key.pem ec2-user@<instance-public-ip>
 2. **Cost monitoring:** Monitor AWS costs during the 40-minute deployment
 3. **Log retention:** Keep logs for troubleshooting and compliance
 4. **Cleanup verification:** Verify all resources are destroyed via AWS Console after cleanup
-5. **Version control:** Never commit sensitive files to version control:
-   - `terraform.tfvars` (may contain sensitive data)
-   - `terraform_{env}/nat_key/key/key.pem` (SSH private keys)
-   - Any files in `.gitignore`
+5. **Version control:** : version control different configurations
 6. **Key management:** Store SSH keys securely and rotate regularly
 7. **Environment separation:** Use different domain names for dev/staging/prod environments
 
