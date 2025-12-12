@@ -16,7 +16,14 @@ fi
 LOG_FILE="$LOG_DIR/ansible_output-${environment_stage}-${next_num}.log"
 # ansible-playbook ../../../../../packer/packer-ansible.yml -vvvv 2>&1 | tee -a ../../../../../packer/ansible_output.log
 # ansible-playbook "${packer_folder}/packer-ansible.yml" -vvvv 2>&1 | tee -a "${packer_folder}/ansible_output.log"
-ansible-playbook "${packer_folder}/packer-ansible.yml" -vvvv 2>&1 | tee -a "${LOG_FILE}"
+ansible-playbook "${packer_folder}/packer-ansible.yml" -vvvv 2>&1 | tee -a "$LOG_FILE.tmp"
+echo ""
+echo "Processing log file..."
+if [ -f "$LOG_FILE.tmp" ]; then
+    sed -E 's/\x1b\[[0-9;]*m//g' "$LOG_FILE.tmp" > "$LOG_FILE"
+    rm "$LOG_FILE.tmp"
+    echo "Log file saved to: $LOG_FILE"
+fi
 exit_code=${PIPESTATUS[0]}
 if [ $$exit_code -ne 0 ]; then
     echo "❌ Ansible playbook failed with exit code $exit_code"

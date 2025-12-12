@@ -65,10 +65,14 @@
 
               echo "No manifest.json found – safe to run Packer for backend."
               echo "{{ environment_stage}} : environment variable"
-              # export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
-              # export ANSIBLE_STDOUT_CALLBACK=yaml
-              # ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_backend_output.log
-              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee  ${LOG_FILE}
+              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee  $LOG_FILE.tmp
+              echo ""
+              echo "Processing log file..."
+              if [ -f "$LOG_FILE.tmp" ]; then
+                sed -E 's/\x1b\[[0-9;]*m//g' "$LOG_FILE.tmp" > "$LOG_FILE"
+                rm "$LOG_FILE.tmp"
+                echo " Log file saved to: $LOG_FILE"
+              fi
             }
           args:
             chdir: "{{ backend_build_dir }}"
@@ -112,10 +116,14 @@
               LOG_FILE="$LOG_DIR/ansiblelog-{{ environment_stage }}-${next_num}.log"
 
               echo "No manifest.json found – safe to run Packer for frontend."
-              # export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
-              # export ANSIBLE_STDOUT_CALLBACK=yaml
-              # ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_frontend_output.log
-              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee  ${LOG_FILE}
+              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee  $LOG_FILE.tmp
+              echo ""
+              echo "Processing log file..."
+              if [ -f "$LOG_FILE.tmp" ]; then
+                sed -E 's/\x1b\[[0-9;]*m//g' "$LOG_FILE.tmp" > "$LOG_FILE"
+                rm "$LOG_FILE.tmp"
+                echo " Log file saved to: $LOG_FILE"
+              fi
             }
           args:
             chdir: "{{ frontend_build_dir }}"
