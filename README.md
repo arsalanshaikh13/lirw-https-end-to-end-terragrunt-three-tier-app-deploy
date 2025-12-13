@@ -6,8 +6,8 @@ This repository contains Infrastructure as Code (IaC) for automated AWS resource
 
 **⚠️ Important Notice:**
 
-- Initial deployment takes approximately **40 minutes**
-- Resource cleanup takes approximately **20 minutes**
+- Initial deployment takes approximately **45 minutes**
+- Resource cleanup takes approximately **25 minutes**
 - All operations are logged in `logs/` and `ansible-logs/` directories (created automatically on startup)
 
 ---
@@ -114,7 +114,7 @@ Deploy all AWS resources:
 - Sets up DNS records in Route 53
 - Creates log directories and begins logging
 
-**Duration:** ~40 minutes
+**Duration:** ~45 minutes
 
 **Test the setup**: in the browser type only `"{env}.yourdomain.com"` eg. dev.yourdomain.com, for testing the app running in dev environment, similarly for prod environment use prod.yourdomain.com
 
@@ -132,7 +132,7 @@ Clean up all AWS resources:
 - Deletes DNS records
 - Preserves logs for audit purposes
 
-**Duration:** ~20 minutes
+**Duration:** ~25 minutes
 
 ---
 
@@ -255,6 +255,6 @@ For issues, questions, or contributions, please:
 **⏱️ Time Investment Summary:**
 
 - Initial Setup: 10 minutes
-- Deployment: 40 minutes
-- Cleanup: 20 minutes
+- Deployment: 45 minutes
+- Cleanup: 25 minutes
 - **Total:** ~70 minutes for complete lifecycle
