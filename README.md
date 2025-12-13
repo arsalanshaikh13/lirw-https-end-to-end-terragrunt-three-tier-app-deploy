@@ -214,7 +214,7 @@ ssh -i nat-bastion-key.pem ec2-user@<instance-public-ip>
 
 **Issue:** "Cannot SSH into EC2 instance"
 
-- **Solution:** Ensure nat-bastion-key.pem has correct permissions: `chmod 400 terraform_{env}/nat_key/key/key.pem`
+- **Solution:** Ensure nat-bastion-key.pem has correct permissions: `chmod 400 terraform_{env}/nat_key/key/nat-bastion-key.pem`
 - Verify security group allows SSH (port 22) from your IP address
 
 **Issue:** "Packer build failures"
