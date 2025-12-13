@@ -18,7 +18,7 @@ locals {
 terraform {
   # source = "../../../../modules/app"
   # source = "${path_relative_from_include("root")}/modules/permissions/acm"
-  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//permissions/acm?version=1.0.1-acm-region"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//permissions/acm?version=1.1.0-domain-change"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.
