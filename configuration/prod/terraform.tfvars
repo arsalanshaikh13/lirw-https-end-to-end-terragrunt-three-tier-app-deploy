@@ -92,8 +92,8 @@ cloudfront_custom_header_name = "X-Custom-Header-prod"
 cloudfront_custom_header_value = "random-value-prod-123456"
 
 # domain records
-certificate_domain_name = "devsandbox.space"
-additional_domain_name  = "prod.devsandbox.space"
+hosted_zone_domain_name = "devsandbox.space"
+domain_name_to_use  = "prod.devsandbox.space"
 alb_api_domain_name     = "api.prod.devsandbox.space"
 
 # sns topic email address

@@ -12,7 +12,7 @@ include "global_mocks" {
 terraform {
   # source = "../../../../modules/app"
   # source = "${path_relative_from_include("root")}/modules/hosting/route53"
-  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//hosting/route53?version=1.0.0-acm-alb-route53"
+  source = "tfr://gitlab.com/arsalanshaikh13/tf-modules-lirw-packer/aws//hosting/route53?version=1.1.0-domain-change"
 
   # You can also specify multiple extra arguments for each use case. Here we configure terragrunt to always pass in the
   # `common.tfvars` var file located by the parent terragrunt config.

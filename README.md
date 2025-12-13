@@ -14,7 +14,9 @@ This repository contains Infrastructure as Code (IaC) for automated AWS resource
 
 ## Prerequisites
 
-### Required Software
+### Required
+
+**Operating System**: any linux distro or git bash on windows, i have used ubuntu in this setup
 
 Ensure the following tools are installed on your system:
 
@@ -72,9 +74,9 @@ Edit the `terraform.tfvars` file with your specific configuration:
 # terraform.tfvars
 
 # Domain Configuration (must be hosted on AWS Route 53)
-certificate_domain_name   = "yourdomain.com"
-additional_domain_name    = "{env}.yourdomain.com"    # Environment-specific subdomain
-alb_api_domain_name       = "api.yourdomain.com"      # Internal load balancer endpoint
+hosted_zone_domain_name   = "yourdomain.com"          # domain saved in hosted zone in route 53
+domain_name_to_use    = "{env}.yourdomain.com"     # domain name to be used to test the app and create acm certificate for cloudfront
+alb_api_domain_name       = "api.yourdomain.com"      # domain name linked to public load balancer and acm certificate for load balancer
 
 # EC2 Configuration
 instance_type = "t4g.small"  # Default: runs on Amazon Linux 2023 arm64 (ec2-user)
@@ -85,9 +87,9 @@ region        = "us-east-1"
 
 **Domain Configuration Notes:**
 
-- `certificate_domain_name`: Primary domain for ACM/SSL certificate
-- `additional_domain_name`: Environment subdomain (replace `{env}` with dev, staging, prod, etc.), domain on which the app is hosted
-- `alb_api_domain_name`: API endpoint for internal Application Load Balancer
+- `hosted_zone_domain_name`: domain hosted in route53
+- `domain_name_to_use`: Environment subdomain (replace `{env}` with dev, staging, prod, etc.), domain on which the app is going to be hosted and tested eg. dev.yourdomain.com
+- `alb_api_domain_name`: API endpoint for Public Application Load Balancer to be used as origin in cloudfront
 
 **⚠️ Domain Requirement:** Your domain must be managed by AWS Route 53 before deployment.
 
@@ -113,6 +115,8 @@ Deploy all AWS resources:
 - Creates log directories and begins logging
 
 **Duration:** ~40 minutes
+
+**Test the setup**: in the browser type only `"{env}.yourdomain.com"` eg. dev.yourdomain.com, for testing the app running in dev environment, similarly for prod environment use prod.yourdomain.com
 
 ### Destroying Infrastructure
 
@@ -172,7 +176,7 @@ chmod 400 nat-bastion-key.pem
 ssh -i nat-bastion-key.pem ec2-user@<instance-public-ip>
 ```
 
-**Security Note:** The `key.pem` file contains sensitive credentials. Never commit this file to version control.
+**Security Note:** The `nat-bastion-key.pem` file contains sensitive credentials. Never commit this file to version control. in this setup the all the key are destroyed after cleanup by the script itself
 
 ### Common Issues
 
@@ -186,11 +190,11 @@ ssh -i nat-bastion-key.pem ec2-user@<instance-public-ip>
 
 **Issue:** "Permission denied on operation.sh"
 
-- **Solution:** Make the script executable: `chmod +x ./scripts/operation.sh`
+- **Solution:** Make the script executable: `chmod +x ./scripts/operation.sh` and other scripts used in operation.sh in scripts folder
 
 **Issue:** "Cannot SSH into EC2 instance"
 
-- **Solution:** Ensure key.pem has correct permissions: `chmod 400 terraform_{env}/nat_key/key/key.pem`
+- **Solution:** Ensure nat-bastion-key.pem has correct permissions: `chmod 400 terraform_{env}/nat_key/key/key.pem`
 - Verify security group allows SSH (port 22) from your IP address
 
 **Issue:** "Packer build failures"
