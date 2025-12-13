@@ -257,4 +257,4 @@ For issues, questions, or contributions, please:
 - Initial Setup: 10 minutes
 - Deployment: 45 minutes
 - Cleanup: 25 minutes
-- **Total:** ~70 minutes for complete lifecycle
+- **Total:** ~80 minutes for complete lifecycle
