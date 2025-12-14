@@ -1,3 +1,6 @@
+# Three-Tier Application AWS Architecture
+
+![Three-Tier AWS Architecture Diagram](architecture/architecture-light.png)
 
 # Installation and Running Guide
 
@@ -116,7 +119,7 @@ Deploy all AWS resources:
 
 **Duration:** ~45 minutes
 
-**Test the setup**: in the browser type only `"www.yourdomain.com"`  for testing the app
+**Test the setup**: in the browser type only `"www.yourdomain.com"` for testing the app
 
 ### Destroying Infrastructure
 
@@ -241,7 +244,6 @@ ssh -i nat-bastion-key.pem ec2-user@<instance-public-ip>
 5. **Version control:** : version control different configurations
 6. **Key management:** Store SSH keys securely and rotate regularly
 
-
 ---
 
 ## Support and Contribution
@@ -258,5 +260,3 @@ For issues, questions, or contributions, please:
 - Deployment: 45 minutes
 - Cleanup: 25 minutes
 - **Total:** ~80 minutes for complete lifecycle
-
-
