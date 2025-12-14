@@ -1,8 +1,0 @@
-digraph G {
-  rankdir = "RL";
-  node [shape = rect, fontname = "sans-serif"];
-  "aws_ssm_parameter.db_host" [label="aws_ssm_parameter.db_host"];
-  "aws_ssm_parameter.db_name" [label="aws_ssm_parameter.db_name"];
-  "aws_ssm_parameter.db_password" [label="aws_ssm_parameter.db_password"];
-  "aws_ssm_parameter.db_username" [label="aws_ssm_parameter.db_username"];
-}

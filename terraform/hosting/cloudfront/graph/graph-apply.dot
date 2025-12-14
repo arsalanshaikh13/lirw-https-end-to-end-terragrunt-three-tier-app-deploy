@@ -1,9 +1,0 @@
-digraph G {
-  rankdir = "RL";
-  node [shape = rect, fontname = "sans-serif"];
-  "aws_cloudfront_cache_policy.caching_optimized" [label="aws_cloudfront_cache_policy.caching_optimized"];
-  "aws_cloudfront_distribution.my_distribution" [label="aws_cloudfront_distribution.my_distribution"];
-  "aws_cloudfront_origin_request_policy.only-host-header" [label="aws_cloudfront_origin_request_policy.only-host-header"];
-  "aws_cloudfront_distribution.my_distribution" -> "aws_cloudfront_cache_policy.caching_optimized";
-  "aws_cloudfront_distribution.my_distribution" -> "aws_cloudfront_origin_request_policy.only-host-header";
-}
