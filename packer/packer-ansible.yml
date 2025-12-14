@@ -1,0 +1,96 @@
+---
+- name: Run Packer image build pipeline for backend and frontend
+  hosts: localhost
+  # hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    environment_stage: "{{ lookup('env', 'environment_stage') }}"
+    packer_folder: "{{ lookup('env', 'packer_folder') }}"
+    # backend_ami_path: "{{ playbook_dir | dirname }}/terraform/compute/modules/asg/ami_ids/backend_ami.txt"
+    # frontend_ami_path: "{{ playbook_dir | dirname }}/terraform/compute/modules/asg/ami_ids/frontend_ami.txt"
+    backend_build_dir: "{{ playbook_dir }}/backend"
+    frontend_build_dir: "{{ playbook_dir }}/frontend"
+    backend_manifest_path: "{{ backend_build_dir }}/manifest.json"
+    frontend_manifest_path: "{{ frontend_build_dir }}/manifest.json"
+
+  tasks:
+    # - name: Ensure working directory path
+    #   ansible.builtin.command: pwd
+    #   register: cwd
+
+    # - name: Show working directory path
+    #   debug:
+    #     msg: "Current working directory : {{ cwd.stdout }}"
+
+    # - name: Display the playbook directory
+    #   debug:
+    #     msg: "Playbook directory is {{ playbook_dir }}"
+
+    - name: Check if backend AMI already exists
+      ansible.builtin.stat:
+        path: "{{ backend_manifest_path }}"
+      register: backend_ami_stat
+
+    # - name: Display backend ami exist status
+    #   debug:
+    #     var: backend_ami_stat
+    # msg: "backend ami exist status: {{ backend_ami_stat.stdout }}"
+
+    - name: Build backend AMI (only if missing)
+      block:
+        - name: Notify backend AMI creation
+          ansible.builtin.debug:
+            msg: "Creating a new Packer image for backend AMI"
+
+        - name: Run backend Ansible build playbook for backend
+          ansible.builtin.shell: |
+            {
+              set -euo pipefail
+              echo "No manifest.json found – safe to run Packer for backend."
+              echo "{{ environment_stage}} : environment variable"
+              # export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
+              # export ANSIBLE_STDOUT_CALLBACK=yaml
+              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_backend_output.log
+            }
+          args:
+            chdir: "{{ backend_build_dir }}"
+            executable: /bin/bash # /bin/sh by default by ansible
+      when: not backend_ami_stat.stat.exists
+
+    - name: Skip backend AMI creation (already exists)
+      ansible.builtin.debug:
+        msg: "Backend AMI already exists — skipping creation"
+      when: backend_ami_stat.stat.exists
+
+    - name: Check if frontend AMI already exists
+      ansible.builtin.stat:
+        path: "{{ frontend_manifest_path }}"
+      register: frontend_ami_stat
+
+    - name: Build frontend AMI (only if missing)
+      block:
+        - name: Notify frontend AMI creation
+          ansible.builtin.debug:
+            msg: "Creating a new Packer image for frontend AMI"
+
+        - name: Run backend Ansible build playbook for frontend
+          ansible.builtin.shell: |
+            {
+              set -euo pipefail
+              echo "No manifest.json found – safe to run Packer for frontend."
+              # export ANSIBLE_LOAD_CALLBACK_PLUGINS=1
+              # export ANSIBLE_STDOUT_CALLBACK=yaml
+              ANSIBLE_LOAD_CALLBACK_PLUGINS=1 ANSIBLE_STDOUT_CALLBACK=minimal ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ansible-playbook build_ami-ansible.yml -vvvv 2>&1 | tee -a build_frontend_output.log
+            }
+          args:
+            chdir: "{{ frontend_build_dir }}"
+            executable: /bin/bash # /bin/sh by default by ansible
+
+      when: not frontend_ami_stat.stat.exists
+
+    - name: Skip frontend AMI creation (already exists)
+      ansible.builtin.debug:
+        msg: "Frontend AMI already exists — skipping creation"
+      when: frontend_ami_stat.stat.exists
